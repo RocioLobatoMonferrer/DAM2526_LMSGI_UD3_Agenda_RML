@@ -36,7 +36,7 @@
 
           <label>
             Número
-            <input id="inpTelNumero" type="tel" inputmode="numeric" pattern="[0-9]{6,15}" required/>
+            <input id="inpTelNumero" type="tel" inputmode="numeric" pattern="[0-9]{6,15}"/>
           </label>
 
           <!-- OPCIONAL:
@@ -61,7 +61,9 @@
       <!-- aria-live="polite":
            Indica que esta zona puede cambiar dinámicamente.
            Es una mejora de accesibilidad. -->
-      <section id="secContactos" aria-live="polite"></section>
+      <section id="secContactos" aria-live="polite">
+        <ul id="listaContacto"></ul>
+      </section>
     </section>
   </main>
 

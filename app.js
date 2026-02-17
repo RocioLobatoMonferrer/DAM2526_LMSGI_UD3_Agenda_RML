@@ -19,6 +19,7 @@ const btnLimpiar = document.querySelector("#btnLimpiar");
  * LISTA
  */
 const listaTel = document.querySelector("#listaTel");
+const listaContacto = document.querySelector("#listaContacto")
 /**
  * MENSAJE
  */
@@ -28,9 +29,7 @@ const mensaje = document.querySelector("#msg");
  * VARIABLES GLOBALES
  */
 let telefonos = [];
-let nombres = [];
-let apellidos = [];
-let contactos = [];
+let agenda = cargarContactos();
 
 /**
  * FUNCIONES
@@ -40,25 +39,28 @@ function init() {
         event.preventDefault();
     });
     btnAddTel.addEventListener("click", () => {
-        if(!validad()) {
+        if(!validadTelefono()) {
             return;
         }
         agregarTelefono();
-        render();
+        pintarLista();
     });
     btnGuardarContacto.addEventListener("click", function(event) {
         event.preventDefault();
         if(!validad()) {
             return;
         }
-        crearContacto();
+        insertarContacto();
+        render();
     });
     btnLimpiar.addEventListener("click", () => {
-
+        limpiar();
     });
     btnBorrarTodo.addEventListener("click", () => {
-
+        confirm("¿Estás seguro?") ? borrarAgenda() : "";
     });
+
+    render();
 }
 
 init();
@@ -73,8 +75,20 @@ function validad(){
         inpApellidos.reportValidity();
         return false;
     }
-    if(!inpTelNumero.checkValidity()) {
+    if (listaTel.children.length == 0){
+        return false;
+    }
+    
+    return true;
+}
+
+function validadTelefono() {
+    if (!inpTelNumero.checkValidity()){
         inpTelNumero.reportValidity();
+        return false;
+    }
+    if (inpTelNumero.value == "") {
+        alert("Añade al menos un teléfono.");
         return false;
     }
     return true;
@@ -84,16 +98,6 @@ function agregarTelefono(){
     telefonos.push(inpTelNumero.value);
     inpTelNumero.value = ""; 
     pintarLista();
-}
-
-function agregarNombre() {
-    nombres.push(inpNombre.value);
-    inpNombre.value = "";
-}
-
-function agregarApellidos() {
-    apellidos.push(inpApellidos.value);
-    inpApellidos.value = "";
 }
 
 function pintarLista() {
@@ -106,45 +110,100 @@ function pintarLista() {
 }
 
 function crearContacto() {
-    if (telefonos.length === 0) {
-        alert("Añade al menos un teléfono.");
-        return null;
-    }
     const contacto = {
-        nombre: [...nombres],
-        apellidos: [...apellidos],
+        id: crearId(),
+        nombre: inpNombre.value,
+        apellidos: inpApellidos.value,
         telefonos: [...telefonos]
     };
-
+    
     return contacto;
 }
 
 function insertarContacto() {
-    
+    const contacto = crearContacto();
+    if(!contacto) {
+        return null;
+    } else {
+        agenda.push(contacto);
+        localStorage.setItem("agenda", JSON.stringify(agenda));
+        telefonos = [];
+        inpNombre.value = "";
+        inpApellidos.value = "";
+        inpTelNumero.value = "";
+        pintarLista();
+    }
 }
 
-/**function crearContacto() {
-    let nombre = inpNombre.value;
-    let apellidos = inpApellidos.value;
-    agregarTelefono();
-    if (tel.children.length === 0) {
-        alert("Añade al menos 1 teléfono.");
-        return;
-    } else {
-        let contacto = 
-    {
-        id: "",
-        nombre:nombre,
-        apellidos:apellidos,
-        telefonos:tel,
-    };
+function crearId() {
+    let id = 0;
+    for(let i = 0; i < agenda.length; i++) {
+        if(agenda[i].id > id) {
+            id = agenda[i].id;
+        }
     }
+    return id+1;
+}
 
-    return contacto;
-}*/
+function pintarContacto() {
+    listaContacto.textContent = "";
+    for(let i = 0; i < agenda.length; i++) {
+        const li = document.createElement("li");
+        const borrar = document.createElement("button");
+        const div = document.createElement("div");
+
+        borrar.textContent = "Borrar";
+        li.innerHTML = `Id: ${agenda[i].id}<br>
+        Nombre: ${agenda[i].nombre}<br>
+        Apellidos: ${agenda[i].apellidos}<br>
+        Telefonos: ${agenda[i].telefonos.join(", ")}<br>`;
+
+        listaContacto.appendChild(div);
+        div.appendChild(li);
+        div.appendChild(borrar);
+
+        borrar.addEventListener("click", () => borrarContacto(div));
+    }
+}
+
+function cargarContactos() {
+  const raw = localStorage.getItem("agenda");
+
+  if (!raw) return [];
+
+  try {
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    alert.error("JSON inválido:", error);
+    return [];
+  }
+}
+
+function borrarContacto(div) {
+    if(!confirm("¿Estás seguro?")) {
+        return false;
+    }
+    div.remove();
+}
+
+function borrarAgenda() {
+    agenda = [];
+    localStorage.removeItem("agenda");
+    render();
+}
+
+function limpiar() {
+    listaTel.textContent = "";
+    telefonos = [];
+    inpNombre.value = "";
+    inpApellidos.value = "";
+    inpTelNumero.value = "";
+    pintarLista();
+}
 
 function render(){
     pintarLista();
-    localStorage.setItem("contacto",JSON.stringify(crearContacto()));
+    pintarContacto();
 }
 
