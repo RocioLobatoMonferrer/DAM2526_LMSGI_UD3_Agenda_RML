@@ -1,39 +1,40 @@
-/**
- * FORMULARIO
- */
+/* ==========================================================
+   1) REFERENCIAS AL DOM 
+   ========================================================== */
+
+
+// Formulario
 const formContacto = document.querySelector("#formContacto");
-/**
- * INPUTS
- */
+// Inputs
 const inpNombre = document.querySelector("#inpNombre");
 const inpApellidos = document.querySelector("#inpApellidos");
 const inpTelNumero = document.querySelector("#inpTelNumero");
-/**
- * BOTONES
- */
+// Botones
 const btnAddTel = document.querySelector("#btnAddTel");
 const btnGuardarContacto = document.querySelector("#btnGContacto");
 const btnBorrarTodo = document.querySelector("#btnBorrarTodo");
 const btnLimpiar = document.querySelector("#btnLimpiar");
-/**
- * LISTA
- */
+// Listas
 const listaTel = document.querySelector("#listaTel");
 const listaContacto = document.querySelector("#listaContacto")
-/**
- * MENSAJE
- */
+// Mensaje
 const mensaje = document.querySelector("#msg");
 
-/**
- * VARIABLES GLOBALES
- */
+
+/* ==========================================================
+   2) VARIABLES GLOBALES  
+   ========================================================== */
+
+
 let telefonos = [];
 let agenda = cargarContactos();
 
-/**
- * FUNCIONES
- */
+
+/* ==========================================================
+   3) INICIALIZACIÓN (eventos)
+   ========================================================== */
+
+
 function init() {
     formContacto.addEventListener("submit", function(event) {
         event.preventDefault();
@@ -43,7 +44,7 @@ function init() {
             return;
         }
         agregarTelefono();
-        pintarLista();
+        pintarListaTelfs();
     });
     btnGuardarContacto.addEventListener("click", function(event) {
         event.preventDefault();
@@ -64,6 +65,12 @@ function init() {
 }
 
 init();
+
+
+/* ==========================================================
+   4) VALIDACIONES DE DATOS 
+   ========================================================== */
+
 
 function validad(){
    if (!inpNombre.checkValidity()) {
@@ -94,20 +101,23 @@ function validadTelefono() {
     return true;
 }
 
+
+/* ==========================================================
+   5) TELEFONOS 
+   ========================================================== */
+
+
 function agregarTelefono(){
     telefonos.push(inpTelNumero.value);
     inpTelNumero.value = ""; 
-    pintarLista();
+    pintarListaTelfs();
 }
 
-function pintarLista() {
-    listaTel.textContent = "";
-    for(let i = 0; i < telefonos.length; i++) {
-        const li = document.createElement("li");
-        li.textContent = telefonos[i];
-        listaTel.appendChild(li);
-    }
-}
+
+/* ==========================================================
+   6) CONTACTOS PARA GUARDAR EN LA AGENDA 
+   ========================================================== */
+
 
 function crearContacto() {
     const contacto = {
@@ -131,7 +141,7 @@ function insertarContacto() {
         inpNombre.value = "";
         inpApellidos.value = "";
         inpTelNumero.value = "";
-        pintarLista();
+        pintarListaTelfs();
     }
 }
 
@@ -143,6 +153,56 @@ function crearId() {
         }
     }
     return id+1;
+}
+
+
+/* ==========================================================
+   7) FUNCIONES DE CARGA7ELIMINACIÓN DE DATOS (localStorage)
+   ========================================================== */
+
+
+function cargarContactos() {
+  const raw = localStorage.getItem("agenda");
+
+  if (!raw) return [];
+
+  try {
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    alert.error("JSON inválido:", error);
+    return [];
+  }
+}
+
+function borrarContacto(indice) {
+    if(!confirm("¿Estás seguro?")) {
+        return false;
+    }
+    agenda.splice(indice, 1); // Elimina en la posición i solo un elemento del array (1)
+    localStorage.setItem("agenda", JSON.stringify(agenda));
+    render();
+}
+
+function borrarAgenda() {
+    agenda = [];
+    localStorage.removeItem("agenda");
+    render();
+}
+
+
+/* ==========================================================
+   8) FUNCIONES DE PINTADO/LIMPIAR
+   ========================================================== */
+
+
+function pintarListaTelfs() {
+    listaTel.textContent = "";
+    for(let i = 0; i < telefonos.length; i++) {
+        const li = document.createElement("li");
+        li.textContent = telefonos[i];
+        listaTel.appendChild(li);
+    }
 }
 
 function pintarContacto() {
@@ -162,35 +222,8 @@ function pintarContacto() {
         div.appendChild(li);
         div.appendChild(borrar);
 
-        borrar.addEventListener("click", () => borrarContacto(div));
+        borrar.addEventListener("click", () => borrarContacto(i));
     }
-}
-
-function cargarContactos() {
-  const raw = localStorage.getItem("agenda");
-
-  if (!raw) return [];
-
-  try {
-    const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    alert.error("JSON inválido:", error);
-    return [];
-  }
-}
-
-function borrarContacto(div) {
-    if(!confirm("¿Estás seguro?")) {
-        return false;
-    }
-    div.remove();
-}
-
-function borrarAgenda() {
-    agenda = [];
-    localStorage.removeItem("agenda");
-    render();
 }
 
 function limpiar() {
@@ -203,7 +236,7 @@ function limpiar() {
 }
 
 function render(){
-    pintarLista();
+    pintarListaTelfs();
     pintarContacto();
 }
 
